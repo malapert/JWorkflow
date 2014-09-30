@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2014 Jean-Christophe Malapert
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<bess:FitsValidation  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+                     xmlns:bess='http://xml.netbeans.org/schema/FitsValidation'
+                     xsi:schemaLocation='http://xml.netbeans.org/schema/FitsValidation FitsValidation.xsd'>
+<bess:Keyword name="SIMPLE" datatype="boolean">[T]</bess:Keyword>
+<bess:Keyword name="BITPIX" datatype="int">[8,16,32,-32,-64]</bess:Keyword>
+<bess:Keyword name="NAXIS" datatype="int">[1:1]</bess:Keyword>
+<bess:Keyword name="NAXIS1" datatype="int">[1:500000]</bess:Keyword>
+<bess:Keyword name="RA" datatype="float">[0:+360]</bess:Keyword>
+<bess:Keyword name="DEC" datatype="float">[-90:+90]</bess:Keyword>
+<bess:Keyword name="EQUINOX" datatype="float">[2000]</bess:Keyword>
+<bess:Keyword name="RADECSYS" datatype="string">[FK5]</bess:Keyword>
+<bess:Keyword name="OBJNAME" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="DATE-OBS" datatype="date">[{DATE_ISO}]</bess:Keyword>
+<bess:Keyword name="DATE-END" datatype="date">[{DATE_ISO}]</bess:Keyword>
+<bess:Keyword name="EXPTIME" datatype="float">[0:20000]</bess:Keyword>
+<bess:Keyword name="CRVAL1" datatype="float">[300:10000]</bess:Keyword>
+<bess:Keyword name="CDELT1" datatype="float">[1E-4:30]</bess:Keyword>
+<bess:Keyword name="CRPIX1" datatype="int"/>
+<bess:Keyword name="CTYPE1" datatype="string">[Wavelength]</bess:Keyword>
+<bess:Keyword name="CUNIT1" datatype="string">[Angstrom,nm]</bess:Keyword>
+<bess:Keyword name="OBSERVER" datatype="string"/>
+<bess:Keyword name="BSS_INST" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="TELESCOP" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="DETNAM" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="INSTRUME" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="BSS_SITE" datatype="string">[1:40]</bess:Keyword>
+<bess:Keyword name="BSS_LAT" datatype="float">[-90:+90]</bess:Keyword>
+<bess:Keyword name="BSS_LONG" datatype="float">[0:+360]</bess:Keyword>
+<bess:Keyword name="BSS_ELEV" datatype="float">[-200:+5500]</bess:Keyword>
+<bess:Keyword name="BSS_VHEL" datatype="float">[-200:200]</bess:Keyword>
+<bess:Keyword name="BSS_TELL" datatype="string"/>  
+<bess:Keyword name="BSS_COSM" datatype="string"/>
+<bess:Keyword name="BSS_NORM" datatype="string"/>  
+<bess:Keyword name="BSS_STYP" datatype="string"/>
+<bess:Keyword name="BSS_VSIN" datatype="float">[0:1000]</bess:Keyword>
+<bess:Keyword name="BSS_VMAG" datatype="float">[-27:30] </bess:Keyword>
+<bess:Keyword name="BSS_ORD" datatype="string"/>
+<bess:Keyword name="BSS_FLD" datatype="float">[0.0003:1]</bess:Keyword>
+<bess:Keyword name="BSS_FRA" datatype="float">[0:+360]</bess:Keyword>
+<bess:Keyword name="BSS_FDEC" datatype="float">[-90:+90]</bess:Keyword>
+<bess:Keyword name="BSS_RQVH" datatype="float">[-200:+200]</bess:Keyword>
+<bess:Keyword name="BSS_ESRP" datatype="float"/>
+<bess:Keyword name="BSS_ITRP" datatype="float"/>
+<bess:Keyword name="BSS_SRPW" datatype="float"/>
+<bess:Keyword name="BSS_BINN" datatype="string"/> 
+<bess:Validation message="error">(NAXIS)</bess:Validation>
+<bess:Validation message="error">(NAXIS1)</bess:Validation>
+<bess:Validation message="error">(OBSERVER)</bess:Validation>
+<bess:Validation message="error">(RA, DEC, (EQUINOX|RADECSYS)) | (OBJNAME)</bess:Validation>
+<bess:Validation message="warning">(!((OBJNAME) , (RA | DEC | EQUINOX | RADECSYS)))</bess:Validation>
+<bess:Validation message="error">(DATE-OBS,DATE-END)|(DATE-OBS,EXPTIME)|(EXPTIME,DATE-END)</bess:Validation>
+<bess:Validation message="warning">((!DATE-OBS)|(!DATE-END)|(!EXPTIME))</bess:Validation>
+<bess:Validation message="error">(BSS_INST) | (TELESCOP, INSTRUME, DETNAM)</bess:Validation>
+<bess:Validation message="warning">(!((BSS_INST) , (TELESCOP | INSTRUME | DETNAM)))</bess:Validation>
+<bess:Validation message="error">(BSS_SITE) | (BSS_LAT, BSS_LONG, BSS_ELEV)</bess:Validation>
+<bess:Validation message="warning">(!((BSS_SITE) , (BSS_LAT | BSS_LONG | BSS_ELEV))) </bess:Validation>
+</bess:FitsValidation>

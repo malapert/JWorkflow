@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2014 Jean-Christophe Malapert
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<malapert:workflow  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+               xmlns:malapert='http://xml.netbeans.org/schema/workflow'
+               xsi:schemaLocation='http://xml.netbeans.org/schema/workflow workflow.xsd' name="test" version="1.0">
+    <malapert:description></malapert:description>
+    <malapert:task name="io.github.malapert.jworkflow.TaskHandler.ValidationHandler" version="1.0.0">
+        <malapert:arg>
+            <malapert:string>step0</malapert:string>
+        </malapert:arg>
+    </malapert:task>    
+    <malapert:task name="io.github.malapert.jworkflow.TaskHandler.FillMetadataHandler" version="1.0.0">
+        <malapert:arg>
+            <malapert:string>step1</malapert:string>
+        </malapert:arg>
+    </malapert:task>
+    <malapert:task name="io.github.malapert.jworkflow.TaskHandler.LocationHandler" version="1.0.0">
+        <malapert:arg>
+            <malapert:string>step2</malapert:string>
+        </malapert:arg>
+    </malapert:task>
+    <malapert:task name="io.github.malapert.jworkflow.TaskHandler.OnlineStoreHandler" version="1.0.0">
+        <malapert:arg>
+            <malapert:string>step3</malapert:string>
+        </malapert:arg>            
+        <malapert:arg>
+            <malapert:file>/tmp/aip</malapert:file>        
+        </malapert:arg>
+    </malapert:task>                                                                    
+</malapert:workflow>

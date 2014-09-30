@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2014 Jean-Christophe Malapert
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/FitsValidation"
+            xmlns:tns="http://xml.netbeans.org/schema/FitsValidation"
+            elementFormDefault="qualified">
+    <xsd:element name="FitsValidation">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Keyword" type="tns:KeywordType" maxOccurs="unbounded"></xsd:element>
+                <xsd:element name="Validation" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:string">
+                                <xsd:attribute name="message" type="tns:messageType"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>                
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:simpleType name="fitsType">
+        <xsd:list>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="string"/>
+                    <xsd:enumeration value="int"/>
+                    <xsd:enumeration value="float"/>
+                    <xsd:enumeration value="boolean"/>
+                    <xsd:enumeration value="date"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:list>
+    </xsd:simpleType>
+    <xsd:simpleType name="messageType">
+        <xsd:list>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="error"/>
+                    <xsd:enumeration value="warning"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:list>
+    </xsd:simpleType>
+    <xsd:simpleType name="requiredType">
+        <xsd:list>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="true"/>
+                    <xsd:enumeration value="false"/>
+                    <xsd:enumeration value="coupled"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:list>
+    </xsd:simpleType>
+    <xsd:complexType name="KeywordType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" use="required">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string"/>
+                    </xsd:simpleType>
+                </xsd:attribute>
+                <xsd:attribute name="datatype" type="tns:fitsType" use="required"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+</xsd:schema>
