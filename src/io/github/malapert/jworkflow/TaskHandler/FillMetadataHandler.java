@@ -108,7 +108,7 @@ public class FillMetadataHandler extends AbstractTaskHandler {
             contentMessage.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentMessage);
         } catch (FitsException | IOException ex) {
-            throw new TaskHandlerException(ex);
+            throw new TaskHandlerException(ex, aip);
         }
     }
 
@@ -130,7 +130,7 @@ public class FillMetadataHandler extends AbstractTaskHandler {
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
             getEvent().setTitle(String.format("Metadata removed from AIP %s", aip.getCore().get(IAIP.AIP_ID)));          
         } catch (FitsException | IOException ex) {
-            throw new TaskHandlerException(ex);
+            throw new TaskHandlerException(ex, aip);
         }
     }
 

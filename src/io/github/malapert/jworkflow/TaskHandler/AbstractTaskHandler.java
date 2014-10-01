@@ -147,7 +147,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);
-            throw new TaskHandlerException(ex);
+            throw new TaskHandlerException(ex, aip);
         } catch (RuntimeException err) {
             getEvent().setLevel(Message.SecurityLevel.CRITCAL);
             getEvent().setTitle(String.format("%s when %s was being processed in the task %s", Message.SecurityLevel.CRITCAL.getDescription(), aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), getName()));
@@ -159,7 +159,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);           
-            throw new TaskHandlerException(err);
+            throw new TaskHandlerException(err, aip);
         } finally {
             Date stopDate = new Date();
             Long processingTime = getDateDiff(startDate, stopDate, TimeUnit.SECONDS);           
@@ -200,7 +200,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);            
-            throw new TaskHandlerException(ex);
+            throw new TaskHandlerException(ex, aip);
         } catch (RuntimeException err) {
             getEvent().setLevel(Message.SecurityLevel.CRITCAL);
             getEvent().setTitle(String.format("%s during the clean up of AIP %s", Message.SecurityLevel.CRITCAL.getDescription(), aip.getCore().get(IAIP.AIP_ID)));
@@ -212,7 +212,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);             
-            throw new TaskHandlerException(err.getMessage(), err.getCause());
+            throw new TaskHandlerException(err.getMessage(), err.getCause(), aip);
         } finally {
             Date stopDate = new Date();
             Long processingTime = getDateDiff(startDate, stopDate, TimeUnit.SECONDS);           

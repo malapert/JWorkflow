@@ -16,26 +16,30 @@
  */
 package io.github.malapert.jworkflow.exception;
 
+import io.github.malapert.jworkflow.model.IAIP;
+
 /**
  *
  * @author Jean-Christophe Malapert
  */
-public class AIPException extends TaskHandlerException {
+public class AIPException extends TaskHandlerException {    
 
     /**
      *
      * @param message
+     * @param aip
      */
-    public AIPException(String message) {
-        super(message);
+    public AIPException(String message, IAIP aip) {
+        super(message, aip);
     }
 
     /**
      *
      * @param ex
+     * @param aip
      */
-    public AIPException(Throwable ex) {
-        super(ex);
+    public AIPException(Throwable ex, IAIP aip) {
+        super(ex, aip);
     }
     
 }

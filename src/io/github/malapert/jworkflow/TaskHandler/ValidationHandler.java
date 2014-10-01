@@ -84,7 +84,7 @@ public class ValidationHandler extends AbstractTaskHandler implements ITaskHandl
             getEvent().setTitle(String.format("AIP %s is valid", aip.getCore().get(IAIP.AIP_ID)));          
         } else {
             aip.addRecordMgt(Message.SecurityLevel.ERROR, getName(), "AIP is not valid : "+fits.getErrors(), 0L);
-            throw new AIPException("AIP is not valid : "+fits.getErrors());
+            throw new AIPException("AIP is not valid : "+fits.getErrors(), aip);
         }
     }
 

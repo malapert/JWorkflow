@@ -175,7 +175,7 @@ public final class AIP implements Serializable, IAIP {
             }
         } catch (RuntimeException ex) {
             this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, ex.getMessage(), 0L);
-            throw new AIPException(ex);
+            throw new AIPException(ex, this);
         }
 
     }
@@ -202,7 +202,7 @@ public final class AIP implements Serializable, IAIP {
             }
         } catch (RuntimeException ex) {
             this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, ex.getMessage(), 0L);
-            throw new AIPException(ex);
+            throw new AIPException(ex, this);
         }
     }
 
@@ -299,15 +299,15 @@ public final class AIP implements Serializable, IAIP {
             boolean result = this.getPreserveFile().renameTo(file);
             if (result) {
                 this.setPreserveFile(file);
+                this.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, processName, "Storing the file to " + file.getAbsolutePath() + " by renaming it", 0L);                
                 save(new File(this.getPreserveFile().getAbsolutePath() + AIP_EXTENSION), isSaveAsBinary());
-                this.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, processName, "Storing the file to " + file.getAbsolutePath() + " by renaming it", 0L);
             } else {
                 this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()), 0L);
-                throw new AIPException(String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()));
+                throw new AIPException(String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()),this);
             }
         } catch (RuntimeException ex) {
             this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, ex.getMessage(), 0L);
-            throw new AIPException(ex);
+            throw new AIPException(ex, this);
         }
     }
 

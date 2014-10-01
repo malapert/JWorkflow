@@ -90,7 +90,7 @@ public class LocationHandler extends AbstractTaskHandler {
             contentMessage.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentMessage);
         } catch (Exception ex) {
-            throw new TaskHandlerException(ex);
+            throw new TaskHandlerException(ex, aip);
         }
     }
 

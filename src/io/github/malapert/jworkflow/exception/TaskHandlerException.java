@@ -16,42 +16,57 @@
  */
 package io.github.malapert.jworkflow.exception;
 
+import io.github.malapert.jworkflow.model.IAIP;
+
 /**
  *
  * @author Jean-Christophe Malapert
  */
 public class TaskHandlerException extends TasksManagerException {
 
+    private IAIP aip;
     /**
      *
+     * @param aip
      */
-    public TaskHandlerException() {
+    public TaskHandlerException(IAIP aip) {
         super();
+        this.aip = aip;
     }
     
     /**
      *
      * @param message
+     * @param aip
      */
-    public TaskHandlerException(String message) {
+    public TaskHandlerException(String message, IAIP aip) {
         super(message);
+        this.aip = aip;
     }    
     
     /**
      *
      * @param cause
+     * @param aip
      */
-    public TaskHandlerException(Throwable cause) {
+    public TaskHandlerException(Throwable cause, IAIP aip) {
         super(cause);
+        this.aip = aip;
     }
     
     /**
      *
      * @param message
      * @param cause
+     * @param aip
      */
-    public TaskHandlerException(String message, Throwable cause) {
+    public TaskHandlerException(String message, Throwable cause, IAIP aip) {
         super(message, cause);
-    }   
+        this.aip = aip;
+    }
+    
+    public IAIP getAIP() {
+        return this.aip;
+    }
     
 }
