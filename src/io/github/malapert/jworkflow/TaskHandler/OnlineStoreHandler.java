@@ -18,6 +18,8 @@ package io.github.malapert.jworkflow.TaskHandler;
 
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import io.github.malapert.jworkflow.validation.ChecksumValidation;
 import java.io.File;
@@ -86,31 +88,36 @@ public class OnlineStoreHandler extends AbstractTaskHandler {
         return pathBuilder.toString();
     }
 
-    /**
-     *
-     * @param aip
-     * @throws TaskHandlerException
-     */
     @Override
-    protected void processTask(IAIP aip) throws TaskHandlerException {
-        String aip_id = (String) aip.getCore().get(IAIP.AIP_ID);
+    protected void processTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            ISIP sip = (ISIP) pack;
+            pack = sip.toIAIP();            
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack; 
+        String aip_id = (String) aip.getCore().get(IAIP.ID);
         String checksum = ChecksumValidation.computeChecksumName(aip_id, ChecksumValidation.ALGORITHM.SHA1);
         String relativePath = computeRelativePath(checksum);
         String path = this.directory.getAbsolutePath() + relativePath;
         File dest = new File(path);
         aip.renameTo(dest, getName());//copyTo(dest);   
         getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-        getEvent().setTitle(String.format("Storing the AIP %s in %s as %s", aip.getCore().get(IAIP.AIP_ID), dest, getName()));
+        getEvent().setTitle(String.format("Storing the AIP %s in %s as %s", aip.getCore().get(IAIP.ID), dest, getName()));
     }
 
-    /**
-     *
-     * @param aip
-     * @throws TaskHandlerException
-     */
     @Override
-    protected void unprocessTask(IAIP aip) throws TaskHandlerException {
-        String checksum = (String) aip.getCore().get(IAIP.AIP_ID);
+    protected void unprocessTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            throw new io.github.malapert.jworkflow.exception.ConversionException();           
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack; 
+        String checksum = (String) aip.getCore().get(IAIP.ID);
         String relativePath = computeRelativePath(checksum);
         String path = this.directory.getAbsolutePath() + relativePath;
         File dest = new File(path);
@@ -121,8 +128,8 @@ public class OnlineStoreHandler extends AbstractTaskHandler {
             dest = dest.getParentFile();
         }
         getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-        getEvent().setTitle(String.format("Removing the AIP %s/%s", aip.getCore().get(IAIP.AIP_ID), dest, getName()));
-        
+        getEvent().setTitle(String.format("Removing the AIP %s/%s", aip.getCore().get(IAIP.ID), dest, getName()));
+
     }
 
     /**

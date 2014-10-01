@@ -16,9 +16,10 @@
  */
 package io.github.malapert.jworkflow.TaskHandler;
 
-import io.github.malapert.jworkflow.model.IAIP;
-import io.github.malapert.jworkflow.exception.AIPException;
+import io.github.malapert.jworkflow.exception.SIPException;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import io.github.malapert.jworkflow.validation.FitsValidation;
 import io.github.malapert.jworkflow.validation.PositionValidation;
@@ -72,29 +73,31 @@ public class ValidationHandler extends AbstractTaskHandler implements ITaskHandl
      * @throws TaskHandlerException
      */
     @Override
-    protected void processTask(IAIP aip) throws TaskHandlerException {
+    protected void processTask(IPackage pack) throws TaskHandlerException {
+        if (!(pack instanceof ISIP)) {
+            throw new TaskHandlerException("Only SIP can be validated", pack);
+        }
+        ISIP sip = (ISIP) pack;        
         Validation fits = new FitsValidation();
         Validation posValidation = new PositionValidation();
         fits.setNext(posValidation);
-        fits.validate(aip.getPreserveFile());
+        fits.validate(sip.getPreserveFile());
         boolean isValid = fits.isValid();
         if (isValid) {
-            aip.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, getName(), "AIP is valid", 0L);
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-            getEvent().setTitle(String.format("AIP %s is valid", aip.getCore().get(IAIP.AIP_ID)));          
+            getEvent().setTitle(String.format("SIP %s is valid", sip.getCore().get(ISIP.ID)));          
         } else {
-            aip.addRecordMgt(Message.SecurityLevel.ERROR, getName(), "AIP is not valid : "+fits.getErrors(), 0L);
-            throw new AIPException("AIP is not valid : "+fits.getErrors(), aip);
+            throw new SIPException("SIP is not valid : "+fits.getErrors(), sip);
         }
     }
 
     /**
      *
-     * @param aip
+     * @param sip
      * @throws TaskHandlerException
      */
     @Override
-    protected void unprocessTask(IAIP aip) throws TaskHandlerException {
+    protected void unprocessTask(IPackage sip) throws TaskHandlerException {
     }
 
     /**

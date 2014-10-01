@@ -14,33 +14,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package io.github.malapert.jworkflow.exception;
+package io.github.malapert.jworkflow.model;
 
-import io.github.malapert.jworkflow.model.IAIP;
+import io.github.malapert.jworkflow.exception.SIPException;
+import java.io.File;
 
 /**
  *
  * @author Jean-Christophe Malapert
  */
-public class AIPException extends TaskHandlerException {    
-    private static final long serialVersionUID = -6926747284879645065L;
+public interface ISIP extends IPackage {
+    /**
+     *
+     */
+    public static final String SIP_ORIGIN_FILE_ID = "ORIGIN_FILE_ID";
 
     /**
      *
-     * @param message
-     * @param aip
      */
-    public AIPException(String message, IAIP aip) {
-        super(message, aip);
-    }
-
-    /**
-     *
-     * @param ex
-     * @param aip
-     */
-    public AIPException(Throwable ex, IAIP aip) {
-        super(ex, aip);
-    }
+    public static final String SIP_CHECKSUM = "CHECKSUM";  
     
+    public static final String SIP_EXTENSION = ".sip";    
+    
+    
+    public String getComment();
+    
+    /**
+     *
+     * @param dest
+     * @param processName
+     * @throws SIPException
+     */
+    public void renameTo(File dest, String processName) throws SIPException;
+
+    /**
+     *
+     */
+    public void remove(); 
+    
+    public IAIP toIAIP();
 }

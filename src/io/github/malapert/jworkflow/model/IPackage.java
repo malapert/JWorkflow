@@ -14,33 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package io.github.malapert.jworkflow.exception;
+package io.github.malapert.jworkflow.model;
 
-import io.github.malapert.jworkflow.model.IAIP;
+import java.io.File;
+import java.util.Map;
 
 /**
  *
  * @author Jean-Christophe Malapert
  */
-public class AIPException extends TaskHandlerException {    
-    private static final long serialVersionUID = -6926747284879645065L;
+public interface IPackage {
+    
+    public static final String ID = "ID";
 
-    /**
-     *
-     * @param message
-     * @param aip
-     */
-    public AIPException(String message, IAIP aip) {
-        super(message, aip);
-    }
-
-    /**
-     *
-     * @param ex
-     * @param aip
-     */
-    public AIPException(Throwable ex, IAIP aip) {
-        super(ex, aip);
-    }
+    public Map<String, Object> getCore();
+    
+    public File getPreserveFile();    
     
 }

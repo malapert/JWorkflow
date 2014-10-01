@@ -17,40 +17,27 @@
 package io.github.malapert.jworkflow.model;
 
 import io.github.malapert.jworkflow.exception.AIPException;
-import io.github.malapert.jworkflow.model.AIP;
-import io.github.malapert.jworkflow.model.Message;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
 import java.util.Map;
 
 /**
  *
  * @author Jean-Christophe Malapert
  */
-public interface IAIP {
-    
-    /**
-     *
-     */
-    public static final String AIP_ID = "ID";
+public interface IAIP extends IPackage {
 
     /**
      *
      */
     public static final String AIP_ORIGIN_FILE_ID = "ORIGIN_FILE_ID";
+    public static final String SIP_ID = "SIP_ID";
 
     /**
      *
      */
-    public static final String AIP_CHECKSUM = "CHECKSUM";    
+    public static final String AIP_CHECKSUM = "CHECKSUM";
 
-    /**
-     *
-     * @return
-     */
-    public File getPreserveFile();
+    public static final String AIP_EXTENSION = ".aip";
 
     /**
      *
@@ -86,12 +73,6 @@ public interface IAIP {
 
     /**
      *
-     * @return
-     */
-    public Map getCore();
-
-    /**
-     *
      * @param dest
      * @param processName
      * @throws AIPException
@@ -102,5 +83,5 @@ public interface IAIP {
      *
      */
     public void remove();
-    
+
 }

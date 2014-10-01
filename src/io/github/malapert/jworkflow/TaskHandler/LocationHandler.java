@@ -18,6 +18,8 @@ package io.github.malapert.jworkflow.TaskHandler;
 
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import io.github.malapert.jworkflow.validation.PositionValidation;
 import org.restlet.ext.atom.Content;
@@ -66,13 +68,15 @@ public class LocationHandler extends AbstractTaskHandler {
         this.customizedName = customizedName;
     }
 
-    /**
-     *
-     * @param aip
-     * @throws TaskHandlerException
-     */
     @Override
-    protected void processTask(IAIP aip) throws TaskHandlerException {
+    protected void processTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            throw new io.github.malapert.jworkflow.exception.ConversionException();        
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack; 
         try {
             if (!aip.getMetadata().containsKey("OBJNAME")) {
                 throw new IllegalArgumentException(String.format("The keyword OBJNAME is not present in the file %s", aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
@@ -84,7 +88,7 @@ public class LocationHandler extends AbstractTaskHandler {
             StringBuilder content = new StringBuilder();
             content.append(String.format("%s : (RA/DEC) = %s / %s", objName, pos[0], pos[1]));
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-            getEvent().setTitle(String.format("Retrieve RA/DEC of %s from CDS for AIP %s", objName, aip.getCore().get(IAIP.AIP_ID)));
+            getEvent().setTitle(String.format("Retrieve RA/DEC of %s from CDS for AIP %s", objName, aip.getCore().get(IAIP.ID)));
             getEvent().setSummmary(String.format("This task has been successfully passed"));
             Content contentMessage = new Content();
             contentMessage.setInlineContent(new StringRepresentation(content));
@@ -96,15 +100,22 @@ public class LocationHandler extends AbstractTaskHandler {
 
     /**
      *
-     * @param aip
      * @throws TaskHandlerException
      */
     @Override
-    protected void unprocessTask(IAIP aip) throws TaskHandlerException {
+    protected void unprocessTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            ISIP sip = (ISIP) pack;
+            pack = sip.toIAIP();            
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack;       
         aip.removeMetadata("RA", getName());
         aip.removeMetadata("DEC", getName());
         getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-        getEvent().setTitle(String.format("Metadata removed from AIP %s", aip.getCore().get(IAIP.AIP_ID)));
+        getEvent().setTitle(String.format("Metadata removed from AIP %s", aip.getCore().get(IAIP.ID)));
 
     }
 

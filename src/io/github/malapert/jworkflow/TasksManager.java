@@ -19,11 +19,14 @@ package io.github.malapert.jworkflow;
 import io.github.malapert.jworkflow.TaskHandler.AbstractTaskHandler;
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.TaskHandler.ITaskHandler;
+import io.github.malapert.jworkflow.exception.ConversionException;
 import io.github.malapert.jworkflow.exception.TasksManagerException;
 import io.github.malapert.jworkflow.parser.Workflow;
 import io.github.malapert.jworkflow.parser.Workflow.Task;
 import io.github.malapert.jworkflow.parser.Workflow.Task.Arg;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import io.github.malapert.jworkflow.notification.INotification;
 import java.io.File;
@@ -39,22 +42,24 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 /**
- * TasksManager is a class that handles a set of tasks, 
- * which are defined in the workflow.xml file.
- * A TasksManager object encapsulates a pipeline of chained tasks
- * {@link io.github.malapert.jworkflow.TaskHandler.AbstractTaskHandler}. 
+ * TasksManager is a class that handles a set of tasks, which are defined in the
+ * workflow.xml file. A TasksManager object encapsulates a pipeline of chained
+ * tasks {@link io.github.malapert.jworkflow.TaskHandler.AbstractTaskHandler}.
  * Each task has the following functionalities:
  * <ul>
  * <li>process an AIP {@link io.github.malapert.jworkflow.model.IAIP}
  * <li>unprocess an AIP {@link io.github.malapert.jworkflow.model.IAIP}
- * <li>notifies an event {@link io.github.malapert.jworkflow.notification.INotification}
+ * <li>notifies an event
+ * {@link io.github.malapert.jworkflow.notification.INotification}
  * </ul>
- * 
+ *
  * @author Jean-Christophe Malapert
  */
 public class TasksManager extends Observable implements INotification {
@@ -89,10 +94,15 @@ public class TasksManager extends Observable implements INotification {
     private transient Workflow workflow;
 
     /**
-     * Constructs a new pipeline of tasks based on the internal configuration file.
-     * @param stopOnFirstException Sets to True when the pipeline must stop at the first exception
-     * @param cleanUpWhenErrorDetected Sets to True when the pipeline must reverse its action
-     * @throws TasksManagerException When the configuration file cannot be parsed
+     * Constructs a new pipeline of tasks based on the internal configuration
+     * file.
+     *
+     * @param stopOnFirstException Sets to True when the pipeline must stop at
+     * the first exception
+     * @param cleanUpWhenErrorDetected Sets to True when the pipeline must
+     * reverse its action
+     * @throws TasksManagerException When the configuration file cannot be
+     * parsed
      */
     public TasksManager(boolean stopOnFirstException, boolean cleanUpWhenErrorDetected) throws TasksManagerException {
         this.stopOnFirstException = stopOnFirstException;
@@ -108,10 +118,15 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Constructs a new pipeline based on a configuration file
-     * @param stopOnFirstException Sets to True when the pipeline must stop at the first exception
-     * @param cleanUpWhenErrorDetected Sets to True when the pipeline must reverse its action
-     * @param confValidation The configuration file that contains the list of tasks
-     * @throws TasksManagerException When the configuration file cannot be parsed
+     *
+     * @param stopOnFirstException Sets to True when the pipeline must stop at
+     * the first exception
+     * @param cleanUpWhenErrorDetected Sets to True when the pipeline must
+     * reverse its action
+     * @param confValidation The configuration file that contains the list of
+     * tasks
+     * @throws TasksManagerException When the configuration file cannot be
+     * parsed
      */
     public TasksManager(boolean stopOnFirstException, boolean cleanUpWhenErrorDetected, final File confValidation) throws TasksManagerException {
         this.stopOnFirstException = stopOnFirstException;
@@ -126,16 +141,16 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Executes the pipeline.
-     * @param aip the AIP
+     *
+     * @param pack
      * @param notification the Notification object
      * @return True when the pipeline is a success otherwise False
      */
-    public boolean run(final IAIP aip, final Observer notification) {
+    public boolean run(final IPackage pack, final Observer notification) {
         boolean result;
         Date startDate = new Date();
         try {
-            addObserver(notification);
-            getEvent().setTitle(String.format("Starting the ingest of AIP %s", aip.getCore().get(IAIP.AIP_ID)));
+            getEvent().setTitle(String.format("Starting the ingest of AIP %s", pack.getCore().get(IPackage.ID)));
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
             getEvent().setAuthors(Arrays.asList("TaskManager"));
             getEvent().setDateEvent(startDate);
@@ -147,14 +162,14 @@ public class TasksManager extends Observable implements INotification {
                 ((AbstractTaskHandler) proc).getObservers().addAll(getObservers());
                 this.appendHandlerToChain(proc);
             }
-            result = this.processChain(aip);
+            result = this.processChain(pack);
             Date stopDate = new Date();
             if (result) {
-                getEvent().setTitle(String.format("AIP %s has been archived in %s seconds", aip.getCore().get(IAIP.AIP_ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
+                getEvent().setTitle(String.format("AIP %s has been archived in %s seconds", pack.getCore().get(IPackage.ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
                 getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
                 getEvent().setAuthors(Arrays.asList("TaskManager"));
             } else {
-                getEvent().setTitle(String.format("Cannot archive AIP %s after %s seconds", aip.getCore().get(IAIP.AIP_ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
+                getEvent().setTitle(String.format("Cannot archive AIP %s after %s seconds", pack.getCore().get(IPackage.ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
                 getEvent().setLevel(Message.SecurityLevel.ERROR);
                 getEvent().setAuthors(Arrays.asList("TaskManager"));
             }
@@ -163,7 +178,7 @@ public class TasksManager extends Observable implements INotification {
             result = false;
             Date stopDate = new Date();
             getErrors().add(ex.getMessage());
-            getEvent().setTitle(String.format("Cannot archive AIP %s after %s seconds", aip.getCore().get(IAIP.AIP_ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
+            getEvent().setTitle(String.format("Cannot archive AIP %s after %s seconds", pack.getCore().get(IPackage.ID), AbstractTaskHandler.getDateDiff(startDate, stopDate, TimeUnit.SECONDS)));
             getEvent().setLevel(Message.SecurityLevel.ERROR);
             getEvent().setAuthors(Arrays.asList("TaskManager"));
             getEvent().setDateEvent(stopDate);
@@ -174,6 +189,7 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Creates a unique identifier.
+     *
      * @param aipID AIP identifier
      * @param date date
      * @return A unique identifier as a String
@@ -184,6 +200,7 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Appends a new task in the pipeline.
+     *
      * @param task Processing task
      */
     private void appendHandlerToChain(final ITaskHandler task) {
@@ -191,26 +208,36 @@ public class TasksManager extends Observable implements INotification {
     }
 
     /**
-     * 
+     *
      * @param errorFound
-     * @return 
+     * @return
      */
     private boolean stopConditionErrorDetected(boolean errorFound) {
         return (stopOnFirstException) ? errorFound : false;
     }
 
     /**
-     * Processes an AIP.
-     * @param aip the AIP to process
+     * Processes an package.
+     *
+     * @param pack
      * @return True when the processing is a success
      */
-    protected boolean processChain(final IAIP aip) {
+    protected boolean processChain(IPackage pack) {
         boolean errorFound = false;
         int i;
         for (i = 0; i < tasks.size() && !stopConditionErrorDetected(errorFound); i++) {
             ITaskHandler task = tasks.get(i);
             try {
-                task.process(aip);
+                task.process(pack);
+            } catch (ConversionException ex) {
+                ISIP sip = (ISIP) pack;
+                pack = sip.toIAIP();
+                try {
+                    task.process(pack);
+                } catch (TaskHandlerException ex1) {
+                    errorFound = true;
+                    getErrors().add(ex.getMessage());
+                }
             } catch (TaskHandlerException ex) {
                 errorFound = true;
                 getErrors().add(ex.getMessage());
@@ -220,7 +247,10 @@ public class TasksManager extends Observable implements INotification {
             for (int j = i - 1; j >= 0; j--) {
                 ITaskHandler task = tasks.get(j);
                 try {
-                    task.unprocess(aip);
+                    task.unprocess(pack);
+                } catch (ConversionException ex) {
+                    ISIP sip = (ISIP) pack;
+                    pack = sip.toIAIP();
                 } catch (TaskHandlerException ex) {
 
                 }
@@ -230,7 +260,8 @@ public class TasksManager extends Observable implements INotification {
     }
 
     /**
-     * Returns the raised up errors. 
+     * Returns the raised up errors.
+     *
      * @return the errors
      */
     public List<String> getErrors() {
@@ -239,6 +270,7 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Parses the configuration file of a Task.
+     *
      * @param task task to parse
      * @return the constructor of the Task
      * @throws TasksManagerException when the type of argument is not supported
@@ -271,10 +303,13 @@ public class TasksManager extends Observable implements INotification {
     }
 
     /**
-     * Builds a processing chain and validates the version of each task according to the configuration file. 
+     * Builds a processing chain and validates the version of each task
+     * according to the configuration file.
+     *
      * @param tasks All the tasks of the workflow
      * @return chained tasks
-     * @throws TasksManagerException When the major version of a current task is different of a major version of the configuration file
+     * @throws TasksManagerException When the major version of a current task is
+     * different of a major version of the configuration file
      */
     private List<ITaskHandler> buildProcessingChain(final List<Task> tasks) throws TasksManagerException {
         List<ITaskHandler> procs = new ArrayList<>();
@@ -330,6 +365,7 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Returns the list of observers to notify.
+     *
      * @return the observers
      */
     public List<Observer> getObservers() {
@@ -338,6 +374,7 @@ public class TasksManager extends Observable implements INotification {
 
     /**
      * Returns the event to notify.
+     *
      * @return the event
      */
     @Override
@@ -356,6 +393,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Constructs a task constructor
+         *
          * @param argType type for each argument
          * @param argValue value for each argument
          * @param version version of the class
@@ -368,6 +406,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Returns the type for each argument.
+         *
          * @return the argType
          */
         public Class[] getArgType() {
@@ -376,6 +415,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Sets the type for each argument.
+         *
          * @param argType the argType to set
          */
         public void setArgType(Class[] argType) {
@@ -384,6 +424,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Returns the list of argument of a constructor.
+         *
          * @return the argValue
          */
         public Object[] getArgValue() {
@@ -392,6 +433,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Sets the list of arguments of a constructor.
+         *
          * @param argValue the argValue to set
          */
         public void setArgValue(Object[] argValue) {
@@ -400,6 +442,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Returns the version of a task.
+         *
          * @return the version
          */
         public String getVersion() {
@@ -408,6 +451,7 @@ public class TasksManager extends Observable implements INotification {
 
         /**
          * Sets the version of a task.
+         *
          * @param version the version to set
          */
         public void setVersion(String version) {

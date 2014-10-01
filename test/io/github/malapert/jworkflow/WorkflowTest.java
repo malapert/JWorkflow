@@ -18,6 +18,7 @@ package io.github.malapert.jworkflow;
 
 import io.github.malapert.jworkflow.exception.TasksManagerException;
 import io.github.malapert.jworkflow.model.AIP;
+import io.github.malapert.jworkflow.model.SIP;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,9 +62,9 @@ public class WorkflowTest {
         System.out.println("main");
         try {
             TasksManager chainManager = new TasksManager(true, true);
-            AIP aip = AIP.create(new File("/tmp/_axmon_20140317_854_cbuil.fit"));
-            aip.setSaveAsBinary(false);
-            boolean result = chainManager.run(aip, Notification.getInstance());
+            SIP sip = SIP.create(new File("/tmp/_axmon_20140317_854_cbuil.fit"));
+            sip.setSaveAsBinary(false);
+            boolean result = chainManager.run(sip, Notification.getInstance());
             if (!result)
                 System.out.println(chainManager.getErrors());
         } catch (TasksManagerException ex) {

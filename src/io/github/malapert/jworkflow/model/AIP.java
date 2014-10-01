@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 public final class AIP implements Serializable, IAIP {
 
     private static final long serialVersionUID = 1L;
-    private final static String AIP_EXTENSION = ".aip";
     private final static String AIP_FTL = "/aip.ftl";
 
     private File preserveFile;
@@ -103,7 +102,7 @@ public final class AIP implements Serializable, IAIP {
     }
 
     private void init(String uniqueIdentifier) {
-        this.getCore().put(AIP_ID, uniqueIdentifier);
+        this.getCore().put(ID, uniqueIdentifier);
         this.getCore().put(AIP_ORIGIN_FILE_ID, getPreserveFile().getName());
     }
 

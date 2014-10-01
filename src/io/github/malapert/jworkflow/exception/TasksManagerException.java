@@ -21,6 +21,7 @@ package io.github.malapert.jworkflow.exception;
  * @author Jean-Christophe Malapert
  */
 public class TasksManagerException extends Exception {
+    private static final long serialVersionUID = 1344396718485121676L;
     
     /**
      *

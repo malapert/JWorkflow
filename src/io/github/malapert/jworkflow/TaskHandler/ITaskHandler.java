@@ -18,6 +18,7 @@ package io.github.malapert.jworkflow.TaskHandler;
 
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
 
 /**
  * Interface to process/unprocess a task.
@@ -27,17 +28,17 @@ public interface ITaskHandler {
 
     /**
      * Processes a task.
-     * @param aip the AIP
+     * @param pack the package
      * @throws TaskHandlerException
      */
-    void process(final IAIP aip) throws TaskHandlerException;
+    void process(final IPackage pack) throws TaskHandlerException;
 
     /**
      * Unprocesses a task.
-     * @param aip the AIP
+     * @param pack the package
      * @throws TaskHandlerException
      */
-    void unprocess(final IAIP aip) throws TaskHandlerException;
+    void unprocess(final IPackage pack) throws TaskHandlerException;
 
     /**
      * Returns the version.

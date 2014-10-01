@@ -16,8 +16,11 @@
  */
 package io.github.malapert.jworkflow.TaskHandler;
 
+import io.github.malapert.jworkflow.exception.ConversionException;
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import io.github.malapert.jworkflow.notification.INotification;
 import java.util.ArrayList;
@@ -104,41 +107,45 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
     }
 
     /**
-     * Processes the task AIP.
-     * @param aip the AIP
+     * Processes the task.
+     * @param pack the package
      * @throws TaskHandlerException When an error happens
      */
-    protected abstract void processTask(final IAIP aip) throws TaskHandlerException;
+    protected abstract void processTask(IPackage pack) throws TaskHandlerException;
 
     /**
-     * Unprocesses the task AIP.
-     * @param aip the AIP
+     * Unprocesses the task.
+     * @param pack
      * @throws TaskHandlerException When an error happens
      */
-    protected abstract void unprocessTask(final IAIP aip) throws TaskHandlerException;
+    protected abstract void unprocessTask(IPackage pack) throws TaskHandlerException;
 
     /**
      * Processes the task and handles Exception
-     * @param aip the AIP
+     * @param pack
      * @throws TaskHandlerException When an error happens 
      */
     @Override
-    public final void process(final IAIP aip) throws TaskHandlerException {
+    public final void process(IPackage pack) throws TaskHandlerException {
         Date startDate = new Date();
         try {
-            processTask(aip);
+            processTask(pack);
             if (getEvent().getTitle().isEmpty()) {
-                getEvent().setTitle(String.format("%s for %s is successed", getName(), aip.getCore().get(IAIP.AIP_ID)));
+                getEvent().setTitle(String.format("%s for %s is successed", getName(), pack.getCore().get(IPackage.ID)));
             }
             if (getEvent().getSummmary().isEmpty()) {
-                getEvent().setSummmary(String.format("The file %s has successfully passed this task", aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
+                getEvent().setSummmary(String.format("The file %s has successfully passed this task", pack.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
             }
             if (getEvent().getLevel() == null) {
                 getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
             }
+        } catch (ConversionException ex) {
+            getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
+            getEvent().setTitle(String.format("Conversion SIP %s to AIP ", pack.getCore().get(IPackage.ID)));           
+            throw new ConversionException();            
         } catch (TaskHandlerException ex) {
             getEvent().setLevel(Message.SecurityLevel.ERROR);
-            getEvent().setTitle(String.format("%s when %s was being processed in the task %s", Message.SecurityLevel.ERROR.getDescription(), aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), getName()));
+            getEvent().setTitle(String.format("%s when %s was being processed in the task %s", Message.SecurityLevel.ERROR.getDescription(), pack.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), getName()));
             getEvent().setSummmary(String.format("%s\nDetail error message : %s\ncause : %s",Message.SecurityLevel.ERROR.getGeneralDescription(), ex.getMessage(), ex.getCause()));
             StringBuilder content = new StringBuilder();
             content.append("Information about the class:\n");
@@ -147,10 +154,10 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);
-            throw new TaskHandlerException(ex, aip);
+            throw new TaskHandlerException(ex, pack);
         } catch (RuntimeException err) {
             getEvent().setLevel(Message.SecurityLevel.CRITCAL);
-            getEvent().setTitle(String.format("%s when %s was being processed in the task %s", Message.SecurityLevel.CRITCAL.getDescription(), aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), getName()));
+            getEvent().setTitle(String.format("%s when %s was being processed in the task %s", Message.SecurityLevel.CRITCAL.getDescription(), pack.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), getName()));
             getEvent().setSummmary(String.format("%s\nDetail error message : %s\ncause : %s",Message.SecurityLevel.ERROR.getGeneralDescription(), err.getMessage(), err.getCause()));
             StringBuilder content = new StringBuilder();
             content.append("Information about the class:\n");
@@ -159,7 +166,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);           
-            throw new TaskHandlerException(err, aip);
+            throw new TaskHandlerException(err, pack);
         } finally {
             Date stopDate = new Date();
             Long processingTime = getDateDiff(startDate, stopDate, TimeUnit.SECONDS);           
@@ -170,28 +177,23 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
         }
     }
 
-    /**
-     * Unprocesses the task and handles the error.
-     * @param aip the AIP
-     * @throws TaskHandlerException When an error happens
-     */
     @Override
-    public final void unprocess(final IAIP aip) throws TaskHandlerException {
+    public final void unprocess(IPackage pack) throws TaskHandlerException {
         Date startDate = new Date();
         try {
-            unprocessTask(aip);
+            unprocessTask(pack);
             if (getEvent().getTitle().isEmpty()) {
-                getEvent().setTitle(String.format("clean up of %s for %s is successed", getName(), aip.getCore().get(IAIP.AIP_ID)));
+                getEvent().setTitle(String.format("clean up of %s for %s is successed", getName(), pack.getCore().get(IPackage.ID)));
             }
             if (getEvent().getSummmary().isEmpty()) {
-                getEvent().setSummmary(String.format("The added information has been successfully removed", aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
+                getEvent().setSummmary(String.format("The added information has been successfully removed", pack.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
             }
             if (getEvent().getProcessingTime() == null) {
                 getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
             }            
         } catch (TaskHandlerException ex) {
             getEvent().setLevel(Message.SecurityLevel.ERROR);
-            getEvent().setTitle(String.format("%s during the clean up of AIP %s", Message.SecurityLevel.ERROR.getDescription(), aip.getCore().get(IAIP.AIP_ID)));
+            getEvent().setTitle(String.format("%s during the clean up of the package %s", Message.SecurityLevel.ERROR.getDescription(), pack.getCore().get(IPackage.ID)));
             getEvent().setSummmary(String.format("%s\n\nDetail error message : %s \n\n cause : %s",Message.SecurityLevel.ERROR.getGeneralDescription(), ex.getMessage(), ex.getCause()));
             StringBuilder content = new StringBuilder();
             content.append("Information about the class\n");
@@ -200,10 +202,10 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);            
-            throw new TaskHandlerException(ex, aip);
+            throw new TaskHandlerException(ex, pack);
         } catch (RuntimeException err) {
             getEvent().setLevel(Message.SecurityLevel.CRITCAL);
-            getEvent().setTitle(String.format("%s during the clean up of AIP %s", Message.SecurityLevel.CRITCAL.getDescription(), aip.getCore().get(IAIP.AIP_ID)));
+            getEvent().setTitle(String.format("%s during the clean up of AIP %s", Message.SecurityLevel.CRITCAL.getDescription(), pack.getCore().get(IPackage.ID)));
             getEvent().setSummmary(String.format("%s\n\nDetail error message : %s \n\n cause : %s",Message.SecurityLevel.ERROR.getGeneralDescription(), err.getMessage(), err.getCause()));
             StringBuilder content = new StringBuilder();
             content.append("Information about the class\n");
@@ -212,7 +214,7 @@ public abstract class AbstractTaskHandler extends Observable implements ITaskHan
             Content contentEvent = new Content();
             contentEvent.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentEvent);             
-            throw new TaskHandlerException(err.getMessage(), err.getCause(), aip);
+            throw new TaskHandlerException(err.getMessage(), err.getCause(), pack);
         } finally {
             Date stopDate = new Date();
             Long processingTime = getDateDiff(startDate, stopDate, TimeUnit.SECONDS);           

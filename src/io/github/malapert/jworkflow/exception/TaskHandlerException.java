@@ -16,42 +16,47 @@
  */
 package io.github.malapert.jworkflow.exception;
 
-import io.github.malapert.jworkflow.model.IAIP;
+import io.github.malapert.jworkflow.model.IPackage;
 
 /**
  *
  * @author Jean-Christophe Malapert
  */
 public class TaskHandlerException extends TasksManagerException {
+    private static final long serialVersionUID = 8544477628870158314L;
 
-    private IAIP aip;
+    private IPackage pack;
+    
+    public TaskHandlerException() {
+        super();
+    }
     /**
      *
-     * @param aip
+     * @param pack 
      */
-    public TaskHandlerException(IAIP aip) {
+    public TaskHandlerException(IPackage pack) {
         super();
-        this.aip = aip;
+        this.pack = pack;
     }
     
     /**
      *
      * @param message
-     * @param aip
+     * @param pack
      */
-    public TaskHandlerException(String message, IAIP aip) {
+    public TaskHandlerException(String message, IPackage pack) {
         super(message);
-        this.aip = aip;
+        this.pack = pack;
     }    
     
     /**
      *
      * @param cause
-     * @param aip
+     * @param pack
      */
-    public TaskHandlerException(Throwable cause, IAIP aip) {
+    public TaskHandlerException(Throwable cause, IPackage pack) {
         super(cause);
-        this.aip = aip;
+        this.pack = pack;
     }
     
     /**
@@ -60,13 +65,13 @@ public class TaskHandlerException extends TasksManagerException {
      * @param cause
      * @param aip
      */
-    public TaskHandlerException(String message, Throwable cause, IAIP aip) {
+    public TaskHandlerException(String message, Throwable cause, IPackage pack) {
         super(message, cause);
-        this.aip = aip;
+        this.pack = pack;
     }
     
-    public IAIP getAIP() {
-        return this.aip;
+    public IPackage getPackage() {
+        return this.pack;
     }
     
 }

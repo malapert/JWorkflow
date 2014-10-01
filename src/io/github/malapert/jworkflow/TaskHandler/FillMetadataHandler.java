@@ -16,8 +16,11 @@
  */
 package io.github.malapert.jworkflow.TaskHandler;
 
+import com.thoughtworks.xstream.converters.ConversionException;
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
+import io.github.malapert.jworkflow.model.IPackage;
+import io.github.malapert.jworkflow.model.ISIP;
 import io.github.malapert.jworkflow.model.Message;
 import java.io.IOException;
 import java.util.Arrays;
@@ -82,7 +85,14 @@ public class FillMetadataHandler extends AbstractTaskHandler {
     }
 
     @Override
-    protected void processTask(final IAIP aip) throws TaskHandlerException {
+    protected void processTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            throw new io.github.malapert.jworkflow.exception.ConversionException();
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack;       
         try {
             int nbKeywordsFilled = 0;
             StringBuilder content = new StringBuilder();
@@ -102,8 +112,8 @@ public class FillMetadataHandler extends AbstractTaskHandler {
                 nbKeywordsFilled++;
             }
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-            getEvent().setTitle(String.format("Filling Metadata for AIP %s", aip.getCore().get(IAIP.AIP_ID)));
-            getEvent().setSummmary(String.format("%s keywords have been extracted from %s in order to be fill in the AIP %s", nbKeywordsFilled, aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), aip.getCore().get(IAIP.AIP_ID)));
+            getEvent().setTitle(String.format("Filling Metadata for AIP %s", aip.getCore().get(IAIP.ID)));
+            getEvent().setSummmary(String.format("%s keywords have been extracted from %s in order to be fill in the AIP %s", nbKeywordsFilled, aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID), aip.getCore().get(IAIP.ID)));
             Content contentMessage = new Content();
             contentMessage.setInlineContent(new StringRepresentation(content));
             getEvent().setContent(contentMessage);
@@ -113,7 +123,15 @@ public class FillMetadataHandler extends AbstractTaskHandler {
     }
 
     @Override
-    protected void unprocessTask(final IAIP aip) throws TaskHandlerException {
+    protected void unprocessTask(IPackage pack) throws TaskHandlerException {
+        IAIP aip;
+        if (pack instanceof ISIP) {
+            ISIP sip = (ISIP) pack;
+            pack = sip.toIAIP();            
+        } else if (!(pack instanceof IAIP)) {
+            throw new TaskHandlerException("Cannot support this package", pack);
+        }
+        aip = (IAIP) pack;        
         try {
             Fits fits = new Fits(aip.getPreserveFile());
             BasicHDU basicHDU = fits.readHDU();
@@ -128,7 +146,7 @@ public class FillMetadataHandler extends AbstractTaskHandler {
                 aip.removeMetadata(key, getName());
             }
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);
-            getEvent().setTitle(String.format("Metadata removed from AIP %s", aip.getCore().get(IAIP.AIP_ID)));          
+            getEvent().setTitle(String.format("Metadata removed from AIP %s", aip.getCore().get(IAIP.ID)));          
         } catch (FitsException | IOException ex) {
             throw new TaskHandlerException(ex, aip);
         }

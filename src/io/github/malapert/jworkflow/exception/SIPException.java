@@ -16,31 +16,31 @@
  */
 package io.github.malapert.jworkflow.exception;
 
-import io.github.malapert.jworkflow.model.IAIP;
+import io.github.malapert.jworkflow.model.ISIP;
 
 /**
  *
  * @author Jean-Christophe Malapert
  */
-public class AIPException extends TaskHandlerException {    
-    private static final long serialVersionUID = -6926747284879645065L;
-
-    /**
+public class SIPException extends TaskHandlerException {
+    private static final long serialVersionUID = -5073121262860796897L;
+    
+  /**
      *
      * @param message
-     * @param aip
+     * @param sip
      */
-    public AIPException(String message, IAIP aip) {
-        super(message, aip);
+    public SIPException(String message, ISIP sip) {
+        super(message, sip);
     }
 
     /**
      *
      * @param ex
-     * @param aip
+     * @param sip
      */
-    public AIPException(Throwable ex, IAIP aip) {
-        super(ex, aip);
-    }
+    public SIPException(Throwable ex, ISIP sip) {
+        super(ex, sip);
+    }    
     
 }
