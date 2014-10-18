@@ -16,7 +16,6 @@
  */
 package io.github.malapert.jworkflow.TaskHandler;
 
-import com.thoughtworks.xstream.converters.ConversionException;
 import io.github.malapert.jworkflow.model.IAIP;
 import io.github.malapert.jworkflow.exception.TaskHandlerException;
 import io.github.malapert.jworkflow.model.IPackage;
@@ -107,7 +106,7 @@ public class FillMetadataHandler extends AbstractTaskHandler {
                     continue;
                 }
                 String value = obj.getValue();
-                aip.addMetadata(key, value, getName());
+                aip.addMetadata(key, value, getName(), this.getClass());
                 content.append(String.format("keyword %s has been added in the AIP with the value %s\n", key, value));
                 nbKeywordsFilled++;
             }

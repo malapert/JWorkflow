@@ -29,6 +29,10 @@ public interface IPackage {
 
     public Map<String, Object> getCore();
     
-    public File getPreserveFile();    
+    public File getPreserveFile();
+    
+    public boolean isSaveAsBinary();
+    
+    public void setSaveAsBinary(boolean saveAsBinary);
     
 }

@@ -23,6 +23,7 @@ import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import io.github.malapert.jworkflow.TaskHandler.FillMetadataHandler;
 import io.github.malapert.jworkflow.exception.AIPException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,10 +54,10 @@ public final class AIP implements Serializable, IAIP {
     private final static String AIP_FTL = "/aip.ftl";
 
     private File preserveFile;
-    private Map<String, Object> metadata = new LinkedHashMap<>();
     private Map<String, Object> core = new HashMap<>();
     private List<RecordManagement> recordsMgt = new ArrayList<>();
     private boolean saveAsBinary = true;
+    private Map<String, LinkedHashMap> metadata = new HashMap<>();
 
     /**
      *
@@ -65,6 +66,8 @@ public final class AIP implements Serializable, IAIP {
      */
     public static AIP create(File preserveFile) {
         AIP aip = new AIP(preserveFile.getName(), preserveFile);
+        aip.getMetadata().put("HEADER", new LinkedHashMap<>());
+        aip.getMetadata().put("COMPUTED", new LinkedHashMap<>());
         aip.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, "Creating AIP", preserveFile.getName() + " has been created with the identifier " + preserveFile.getName(), 0L);
         return aip;
     }
@@ -119,8 +122,9 @@ public final class AIP implements Serializable, IAIP {
         XStream xstream = new XStream(new DomDriver());
         xstream.alias("AIP", AIP.class);
         xstream.alias("recordMgt", RecordManagement.class);
-        NamedMapConverter namedMapConverter = new NamedMapConverter(xstream.getMapper(), "keyword", "name", String.class, null, String.class, true, false, xstream.getConverterLookup());
-        xstream.registerConverter(namedMapConverter);
+        xstream.alias("message", Message.class);
+        xstream.registerConverter(new NamedMapConverter(xstream.getMapper(), null, "key", String.class, "value", LinkedHashMap.class));
+        xstream.registerConverter(new NamedMapConverter(LinkedHashMap.class, xstream.getMapper(), "keyword", "name", String.class, null, String.class, true, false, xstream.getConverterLookup()));
         return xstream;
     }
 
@@ -152,7 +156,7 @@ public final class AIP implements Serializable, IAIP {
     /**
      * @param metadata the metadata to set
      */
-    private void setMetadata(Map<String, Object> metadata) {
+    private void setMetadata(Map<String, LinkedHashMap> metadata) {
         this.metadata = metadata;
     }
 
@@ -164,9 +168,16 @@ public final class AIP implements Serializable, IAIP {
      * @throws AIPException
      */
     @Override
-    public void addMetadata(String keyword, String value, String processName) throws AIPException {
+    public void addMetadata(String keyword, String value, String processName, Class className) throws AIPException {
         try {
-            Object result = this.getMetadata().put(keyword, value);
+            Object result;
+            if (FillMetadataHandler.class.getCanonicalName().equals(className.getCanonicalName())) {
+                Map header = (Map) this.getMetadata().get("HEADER");
+                result = header.put(keyword, value);
+            } else {
+                Map header = (Map) this.getMetadata().get("COMPUTED");
+                result = header.put(keyword, value);
+            }
             if (result == null) {
                 this.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, processName, "Add " + keyword + "=" + value, 0L);
             } else {
@@ -282,14 +293,12 @@ public final class AIP implements Serializable, IAIP {
 //            throw new AIPException(ex);
 //        }
 //    }
-
     /**
      *
      * @param file
      * @param processName
      * @throws AIPException
      */
-    
     @Override
     public void renameTo(File file, String processName) throws AIPException {
         try {
@@ -298,11 +307,11 @@ public final class AIP implements Serializable, IAIP {
             boolean result = this.getPreserveFile().renameTo(file);
             if (result) {
                 this.setPreserveFile(file);
-                this.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, processName, "Storing the file to " + file.getAbsolutePath() + " by renaming it", 0L);                
+                this.addRecordMgt(Message.SecurityLevel.INFORMATIONAL, processName, "Storing the file to " + file.getAbsolutePath() + " by renaming it", 0L);
                 save(new File(this.getPreserveFile().getAbsolutePath() + AIP_EXTENSION), isSaveAsBinary());
             } else {
                 this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()), 0L);
-                throw new AIPException(String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()),this);
+                throw new AIPException(String.format("Cannot rename the file %s to %s", this.getPreserveFile().getName(), file.getName()), this);
             }
         } catch (RuntimeException ex) {
             this.addRecordMgt(Message.SecurityLevel.CRITCAL, processName, ex.getMessage(), 0L);
@@ -389,6 +398,7 @@ public final class AIP implements Serializable, IAIP {
     /**
      * @return the saveAsBinary
      */
+    @Override
     public boolean isSaveAsBinary() {
         return saveAsBinary;
     }
@@ -396,6 +406,7 @@ public final class AIP implements Serializable, IAIP {
     /**
      * @param saveAsBinary the saveAsBinary to set
      */
+    @Override
     public void setSaveAsBinary(boolean saveAsBinary) {
         this.saveAsBinary = saveAsBinary;
     }
@@ -412,7 +423,7 @@ public final class AIP implements Serializable, IAIP {
                 //XMLEncoder encoder = new XMLEncoder(fos);
                 //encoder.writeObject(this);
                 //encoder.flush();
-                //encoder.close();              
+                //encoder.close();    
                 XStream xstream = createXstream();
                 xstream.toXML(this, fos);
             }
@@ -432,5 +443,33 @@ public final class AIP implements Serializable, IAIP {
                 Logger.getLogger(AIP.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    @Override
+    public String getMetadata(String key) {
+        Map<String, String> header = (Map) getMetadata().get("HEADER");
+        Map<String, String> computed = (Map) getMetadata().get("COMPUTED");
+        String result;
+        if (header.containsKey(key)) {
+            result = header.get(key);
+        } else if (computed.containsKey(key)) {
+            result = computed.get(key);
+        } else {
+            throw new IllegalArgumentException("key " + key + " does not exist");
+        }
+        return result;
+    }
+
+    @Override
+    public boolean containsMetadata(String key) {
+        Map header = (Map) getMetadata().get("HEADER");
+        Map computed = (Map) getMetadata().get("COMPUTED");
+        boolean result;
+        if (header.containsKey(key)) {
+            result = true;
+        } else {
+            result = computed.containsKey(key);
+        }
+        return result;
     }
 }

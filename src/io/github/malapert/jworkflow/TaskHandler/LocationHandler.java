@@ -78,13 +78,13 @@ public class LocationHandler extends AbstractTaskHandler {
         }
         aip = (IAIP) pack; 
         try {
-            if (!aip.getMetadata().containsKey("OBJNAME")) {
+            if (!aip.containsMetadata("OBJNAME")) {
                 throw new IllegalArgumentException(String.format("The keyword OBJNAME is not present in the file %s", aip.getCore().get(IAIP.AIP_ORIGIN_FILE_ID)));
             }
-            String objName = (String) aip.getMetadata().get("OBJNAME");
+            String objName = (String) aip.getMetadata("OBJNAME");
             String[] pos = PositionValidation.computePosFromObjectName(objName);
-            aip.addMetadata("RA", pos[0], getName());
-            aip.addMetadata("DEC", pos[1], getName());
+            aip.addMetadata("RA", pos[0], getName(), this.getClass());
+            aip.addMetadata("DEC", pos[1], getName(), this.getClass());
             StringBuilder content = new StringBuilder();
             content.append(String.format("%s : (RA/DEC) = %s / %s", objName, pos[0], pos[1]));
             getEvent().setLevel(Message.SecurityLevel.INFORMATIONAL);

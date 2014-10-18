@@ -67,6 +67,8 @@ public class WorkflowTest {
             boolean result = chainManager.run(sip, Notification.getInstance());
             if (!result)
                 System.out.println(chainManager.getErrors());
+            AIP aip = AIP.readFromCache(new File("/tmp/aip/48e/f23/cab/987/eaa/09f/e16/fba/039/53c/8f7/d79/5375.aip"), false);
+            System.out.println(aip.toString());
         } catch (TasksManagerException ex) {
             Logger.getLogger(WorkflowTest.class.getName()).log(Level.SEVERE, null, ex);
         }

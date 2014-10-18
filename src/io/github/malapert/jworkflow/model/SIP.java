@@ -142,6 +142,7 @@ public final class SIP implements Serializable, ISIP {
     /**
      * @return the saveAsBinary
      */
+    @Override
     public boolean isSaveAsBinary() {
         return saveAsBinary;
     }
@@ -289,7 +290,8 @@ public final class SIP implements Serializable, ISIP {
 
     @Override
     public IAIP toIAIP() {
-        IAIP aip = AIP.create(getPreserveFile());
+        IAIP aip = AIP.create(getPreserveFile()); 
+        aip.setSaveAsBinary(this.isSaveAsBinary());
         aip.getCore().put(IAIP.SIP_ID, getCore().get(ISIP.ID));
         return aip;
     }

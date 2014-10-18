@@ -23,8 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </#list>
     </core>
     <metadata>
-<#list metadata?keys as key><#assign value = metadata[key]>
-        <${key}>${value}</${key}>
+<#list metadata?keys as keyTopic><#assign valueTopic = metadata[keyTopic]>
+        <${keyTopic}>
+    <#list valueTopic?keys as key><#assign value = valueTopic[key]>
+            <${key}>${value}</${key}>
+    </#list>
+        </${keyTopic}>
 </#list>
     </metadata>
     <recordMgt>

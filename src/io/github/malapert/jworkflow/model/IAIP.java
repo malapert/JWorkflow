@@ -44,9 +44,10 @@ public interface IAIP extends IPackage {
      * @param key
      * @param value
      * @param processName
+     * @param className
      * @throws AIPException
      */
-    public void addMetadata(String key, String value, String processName) throws AIPException;
+    public void addMetadata(String key, String value, String processName, Class className) throws AIPException;
 
     /**
      *
@@ -70,6 +71,10 @@ public interface IAIP extends IPackage {
      * @return
      */
     public Map getMetadata();
+    
+    public String getMetadata(String key);
+    
+    public boolean containsMetadata(String key);
 
     /**
      *
